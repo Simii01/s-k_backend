@@ -17,7 +17,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
     cors({
-        origin: "http://127.0.0.1:5500",
+        origin: "https://sandk.netlify.app",
         credentials: true,
     })
 );
@@ -183,7 +183,7 @@ app.post("/api/Login", (req, res) => {
                     res.cookie("auth_token", token, {
                         httpOnly: true,
                         secure: true,
-                        sameSite: "none",
+                        sameSite: "lax",
                         maxAge: 1000 * 60 * 60 * 24 * 30 * 12,
                     });
 
@@ -211,7 +211,7 @@ app.post("/api/Logout", authenticateToken, (req, res) => {
     res.clearCookie("auth_token", {
         httpOnly: true,
         secure: true,
-        sameSite: "none",
+        sameSite: "lax",
     });
     return res.status(200).json({ message: "Sikeres kijelentkezés!" });
 });
