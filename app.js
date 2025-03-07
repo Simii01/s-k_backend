@@ -207,7 +207,7 @@ app.post("/api/Login", (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ error: "Nem ment a bcrypt vagy a reg Internal server error." });
-    }
+    } 
 });
 
 //logout
