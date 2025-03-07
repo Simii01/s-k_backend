@@ -110,6 +110,7 @@ function authenticateToken(req, res, next) {
 app.post("/api/Register", (req, res) => {
     const { email, username, password } = req.body;
     const errors = [];
+    console.log(email, username, password);
 
     if (!validator.isEmail(email)) {
         errors.push({ error: "Az e-mail cím nem létezik!" });
@@ -129,6 +130,7 @@ app.post("/api/Register", (req, res) => {
 
     bcrypt.hash(password, 10, (err, hash) => {
         if (err) {
+            console.log(`bcrypt után: ${err}`);
             return res.status(500).json({ error: "Hiba a hashelés során" });
         }
 
@@ -136,9 +138,10 @@ app.post("/api/Register", (req, res) => {
 
         pool.query(sql, [email, username, hash], (err, result) => {
             if (err) {
-                console.log(err);
+                console.log(`regisztráció adatbázis: ${err}`);
                 return res.status(500).json({ error: "SQL hiba!" });
             }
+            console.log(result);
             res.status(201).json({ message: "Sikeres regisztráció! " });
         });
     });
@@ -166,19 +169,20 @@ app.post("/api/Login", (req, res) => {
         const sql = "SELECT * FROM users WHERE email LIKE ?";
         pool.query(sql, [email], (err, result) => {
             if (err) {
+                console.log(`felhasználó ellenőrzése hiba: ${err}`);
                 return res.status(500).json({ error: "Hiba az SQL-ben!" });
             }
 
             if (result.length === 0) {
                 return res.status(404).json({ error: "A felhasználó nem találató!" });
             }
-
+            console.log(result);
             const user = result[0];
             bcrypt.compare(password, user.password, (err, isMatch) => {
                 if (isMatch) {
                     // Create JWT token
                     const token = jwt.sign({ id: user.user_id }, process.env.JWT_SECRET, { expiresIn: "1y" });
-
+                    
                     // Set the token as a cookie
                     res.cookie("auth_token", token, {
                         httpOnly: true,
@@ -202,7 +206,7 @@ app.post("/api/Login", (req, res) => {
             });
         });
     } catch (error) {
-        res.status(500).json({ error: "Internal server error." });
+        res.status(500).json({ error: "Nem ment a bcrypt vagy a reg Internal server error." });
     }
 });
 
