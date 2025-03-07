@@ -21,6 +21,7 @@ app.use(
         credentials: true,
     })
 );
+// komment
 app.use(cookieParser());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 //sql connection
