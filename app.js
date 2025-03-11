@@ -650,10 +650,10 @@ app.get("/api/search", (req, res) => {
     });
 });
 
-app.get("/api/product/:product_id", authenticateToken, (req, res) => {
+app.get("/api/product_variant/:product_id", authenticateToken, (req, res) => {
     const productId = req.params.product_id;
+    const { color, size } = req.query;
 
-    // Validate productId
     if (!productId || isNaN(productId)) {
         return res.status(400).json({ error: "Invalid product ID." });
     }
@@ -671,23 +671,22 @@ app.get("/api/product/:product_id", authenticateToken, (req, res) => {
             pi.img_url
         FROM products p
         LEFT JOIN products_images pi ON p.product_id = pi.product_id
-        WHERE p.product_id = ?
+        WHERE p.product_id = ? AND p.color = ? AND p.size = ?
     `;
 
-    pool.query(sql, [productId], (err, result) => {
+    pool.query(sql, [productId, color, size], (err, result) => {
         if (err) {
-            console.error("SQL error:", err); // Log the SQL error
+            console.error("SQL error:", err);
             return res.status(500).json({ error: "Database error.", details: err.message });
         }
 
         if (result.length === 0) {
-            return res.status(404).json({ error: "Product not found." });
+            return res.status(404).json({ error: "Product variant not found." });
         }
 
         res.status(200).json(result[0]);
     });
 });
-
 
 app.listen(process.env.PORT, () => {
     console.log(`IP: ${process.env.HOSTNAME}:${process.env.PORT}`);
