@@ -182,7 +182,7 @@ app.post("/api/Login", (req, res) => {
                 if (isMatch) {
                     // Create JWT token
                     const token = jwt.sign({ id: user.user_id }, process.env.JWT_SECRET, { expiresIn: "1y" });
-                    
+
                     // Set the token as a cookie
                     res.cookie("auth_token", token, {
                         httpOnly: true,
@@ -207,7 +207,7 @@ app.post("/api/Login", (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ error: "Nem ment a bcrypt vagy a reg Internal server error." });
-    } 
+    }
 });
 
 //logout
@@ -650,31 +650,40 @@ app.get("/api/search", (req, res) => {
     });
 });
 
-app.get("/api/product_variant/:product_id", authenticateToken, (req, res) => {
+app.get("/api/product/:product_id", authenticateToken, (req, res) => {
     const productId = req.params.product_id;
-    const { color, size } = req.query;
+    //const { color, size } = req.query;
 
     if (!productId || isNaN(productId)) {
         return res.status(400).json({ error: "Invalid product ID." });
     }
 
     const sql = `
-        SELECT 
-            p.product_id, 
-            p.brand, 
-            p.category, 
-            p.size, 
-            p.color, 
-            p.product_name, 
-            p.price, 
-            p.is_in_stock, 
-            pi.img_url
-        FROM products p
-        LEFT JOIN products_images pi ON p.product_id = pi.product_id
-        WHERE p.product_id = ? AND p.color = ? AND p.size = ?
+                SELECT
+                    p.product_id,
+                    p.category,
+                    p.brand,
+                    p.size,
+                    p.color,
+                    p.product_name,
+                    p.price,
+                    p.is_in_stock,
+                    MAX(CASE WHEN pi.img_number = 1 THEN pi.img_url END) AS img1,
+                    MAX(CASE WHEN pi.img_number = 2 THEN pi.img_url END) AS img2,
+                    MAX(CASE WHEN pi.img_number = 3 THEN pi.img_url END) AS img3
+                FROM products p
+                LEFT JOIN (
+                    SELECT
+                        product_id,
+                        img_url,
+                        ROW_NUMBER() OVER (PARTITION BY product_id ORDER BY id) AS              img_number
+                    FROM products_images
+                ) pi ON p.product_id = pi.product_id
+                WHERE p.product_id = ?
+                GROUP BY p.product_id;
     `;
 
-    pool.query(sql, [productId, color, size], (err, result) => {
+    pool.query(sql, [productId], (err, result) => {
         if (err) {
             console.error("SQL error:", err);
             return res.status(500).json({ error: "Database error.", details: err.message });
