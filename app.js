@@ -679,7 +679,7 @@ app.get("/api/product/:product_id", authenticateToken, (req, res) => {
                         ROW_NUMBER() OVER (PARTITION BY product_id ORDER BY id) AS              img_number
                     FROM products_images
                 ) pi ON p.product_id = pi.product_id
-                WHERE p.product_id = ?
+                WHERE p.product_id = ? 
                 GROUP BY p.product_id;
     `;
 
