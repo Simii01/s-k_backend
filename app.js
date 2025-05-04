@@ -1,7 +1,8 @@
+const dotenv = require("dotenv");
+dotenv.config();
 const express = require("express");
 const mysql = require("mysql2");
 const bcrypt = require("bcryptjs");
-const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const fs = require("fs");
@@ -24,7 +25,6 @@ app.use(cookieParser());
 app.use("/api/admin", adminRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-dotenv.config();
 const PORT = process.env.PORT;
 const HOSTNAME = process.env.HOSTNAME;
 
